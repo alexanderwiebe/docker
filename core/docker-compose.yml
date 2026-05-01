@@ -1,0 +1,36 @@
+services:
+
+  freshrss:
+    image: freshrss/freshrss:latest
+    container_name: freshrss
+    environment:
+      - TZ=America/Chicago
+    volumes:
+      - /mnt/docker/core/freshrss/data:/var/www/FreshRSS/data
+      - /mnt/docker/core/freshrss/extensions:/var/www/FreshRSS/extensions
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  rsshub:
+    image: diygod/rsshub:latest
+    container_name: rsshub
+    ports:
+      - "1200:1200"
+    environment:
+      - NODE_ENV=production
+      - CACHE_TYPE=redis
+      - REDIS_URL=redis://redis:6379
+      - TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN}
+      - TWITTER_AUTH_TOKEN=${TWITTER_AUTH_TOKEN}
+      - TWITTER_AUTHENTICATION_SECRET=${TWITTER_AUTHENTICATION_SECRET}
+    depends_on:
+      - redis
+    restart: unless-stopped  
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    volumes:
+      - /mnt/docker/core/redis:/data
+    restart: unless-stopped
