@@ -21,6 +21,7 @@ services:
       - NODE_ENV=production
       - CACHE_TYPE=redis
       - REDIS_URL=redis://redis:6379
+      - CACHE_EXPIRE=1800
       - TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN}
       - TWITTER_AUTH_TOKEN=${TWITTER_AUTH_TOKEN}
       - TWITTER_AUTHENTICATION_SECRET=${TWITTER_AUTHENTICATION_SECRET}
@@ -31,6 +32,8 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
+    ports:
+      - "127.0.0.1:6379:6379"
     volumes:
       - /mnt/docker/core/redis:/data
     restart: unless-stopped

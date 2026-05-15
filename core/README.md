@@ -10,10 +10,13 @@ timelines as RSS, which the briefing script polls directly. Requires Twitter aut
 credentials via environment variables (see `.env.example`).
 
 Backed by Redis for response caching so repeated fetches don't hit rate limits.
+Cache TTL is set to 30 minutes (`CACHE_EXPIRE=1800`) to avoid timeouts when the
+briefing script hits feeds that haven't been warmed recently.
 
-### Redis (`internal`)
-Cache layer for RSSHub. No external port — only reachable by other services in
-the compose network. Data is persisted to `/mnt/docker/core/redis`.
+### Redis (`127.0.0.1:6379`)
+Cache layer for RSSHub and the ai-briefing Telegram bot. Bound to `127.0.0.1:6379`
+so host-side scripts (`briefing.py`, `bot.py`) can reach it via `localhost` without
+the IP changing on container restarts. Data is persisted to `/mnt/docker/core/redis`.
 
 ### FreshRSS (`port 8080`)
 Web-based RSS reader and aggregator. Optional — useful for browsing raw feeds
@@ -26,11 +29,11 @@ are persisted to `/mnt/docker/core/freshrss`.
 Twitter/X lists
       │
       ▼
-   RSSHub :1200  ←──  Redis (cache)
-      │
-      ▼
- briefing.py  (~/ai-briefing)
-      │
+   RSSHub :1200  ←──  Redis :6379 (localhost)
+      │                     ▲           │
+      ▼                     │           ▼
+ briefing.py  ──────── stores items   bot.py reads items
+      │                               on button press
       ▼
  Claude CLI  →  Telegram
 ```
