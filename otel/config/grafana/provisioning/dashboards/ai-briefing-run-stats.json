@@ -228,6 +228,7 @@
       "gridPos": { "x": 0, "y": 18, "w": 12, "h": 10 },
       "options": {
         "orientation": "horizontal",
+        "xField": "author",
         "fillOpacity": 80,
         "legend": { "displayMode": "hidden" },
         "tooltip": { "mode": "single" },
@@ -239,6 +240,10 @@
           "unit": "short"
         }
       },
+      "transformations": [
+        { "id": "labelsToFields", "options": { "mode": "rows" } },
+        { "id": "sortBy", "options": { "fields": [{ "desc": true, "displayName": "Value" }] } }
+      ],
       "targets": [
         {
           "refId": "A",
@@ -260,6 +265,7 @@
       "gridPos": { "x": 12, "y": 18, "w": 12, "h": 10 },
       "options": {
         "orientation": "horizontal",
+        "xField": "handle",
         "fillOpacity": 80,
         "legend": { "displayMode": "hidden" },
         "tooltip": { "mode": "single" },
@@ -271,6 +277,10 @@
           "unit": "short"
         }
       },
+      "transformations": [
+        { "id": "labelsToFields", "options": { "mode": "rows" } },
+        { "id": "sortBy", "options": { "fields": [{ "desc": true, "displayName": "Value" }] } }
+      ],
       "targets": [
         {
           "refId": "A",
