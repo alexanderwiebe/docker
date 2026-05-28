@@ -247,13 +247,11 @@
         ]
       },
       "transformations": [
-        { "id": "reduce", "options": { "reducers": ["last"] } },
         {
           "id": "organize",
           "options": {
             "renameByName": {
-              "Field": "Author",
-              "Last": "Count",
+              "author": "Author",
               "Value": "Count",
               "Value #A": "Count"
             },
@@ -269,7 +267,7 @@
           "editorMode": "code",
           "expr": "topk(15, sum by (author) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | author != `` [$__range])))",
           "queryType": "instant",
-          "legendFormat": "{{author}}"
+          "legendFormat": ""
         }
       ]
     },
@@ -302,13 +300,11 @@
         ]
       },
       "transformations": [
-        { "id": "reduce", "options": { "reducers": ["last"] } },
         {
           "id": "organize",
           "options": {
             "renameByName": {
-              "Field": "Handle",
-              "Last": "Count",
+              "handle": "Handle",
               "Value": "Count",
               "Value #A": "Count"
             },
@@ -324,7 +320,7 @@
           "editorMode": "code",
           "expr": "topk(15, sum by (handle) (count_over_time({service_name=\"ai-briefing\"} | json | event=`person_recommended` | handle != `` [$__range])))",
           "queryType": "instant",
-          "legendFormat": "{{handle}}"
+          "legendFormat": ""
         }
       ]
     },
