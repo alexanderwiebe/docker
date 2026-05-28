@@ -45,7 +45,7 @@
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Trend context:\" | regexp \"Trend context: (?P<clusters>\\d+) clusters\" | unwrap clusters | __error__=\"\" [$__interval])",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Trend context:\" | regexp \"Trend context: (?P<clusters>[0-9]+) clusters\" | unwrap clusters | __error__=\"\" [$__interval])",
           "queryType": "range",
           "legendFormat": "clusters injected"
         }
@@ -222,7 +222,7 @@
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"Link enrichment: (?P<enriched>\\d+)/\" | unwrap enriched | __error__=\"\" [$__interval])",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"Link enrichment: (?P<enriched>[0-9]+)/\" | unwrap enriched | __error__=\"\" [$__interval])",
           "queryType": "range",
           "legendFormat": "enriched"
         },
@@ -230,7 +230,7 @@
           "refId": "B",
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"Link enrichment: \\d+/(?P<eligible>\\d+)\" | unwrap eligible | __error__=\"\" [$__interval])",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"Link enrichment: [0-9]+/(?P<eligible>[0-9]+)\" | unwrap eligible | __error__=\"\" [$__interval])",
           "queryType": "range",
           "legendFormat": "eligible"
         }
@@ -266,7 +266,7 @@
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<arxiv>\\d+) arxiv\" | unwrap arxiv | __error__=\"\" [$__interval])",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<arxiv>[0-9]+) arxiv\" | unwrap arxiv | __error__=\"\" [$__interval])",
           "queryType": "range",
           "legendFormat": "arxiv"
         },
@@ -274,7 +274,7 @@
           "refId": "B",
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<html>\\d+) html\" | unwrap html | __error__=\"\" [$__interval])",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<html>[0-9]+) html\" | unwrap html | __error__=\"\" [$__interval])",
           "queryType": "range",
           "legendFormat": "html"
         },
@@ -282,7 +282,7 @@
           "refId": "C",
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<redirect>\\d+) redirect\" | unwrap redirect | __error__=\"\" [$__interval])",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<redirect>[0-9]+) redirect\" | unwrap redirect | __error__=\"\" [$__interval])",
           "queryType": "range",
           "legendFormat": "redirect"
         }
