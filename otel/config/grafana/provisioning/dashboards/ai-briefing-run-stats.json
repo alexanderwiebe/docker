@@ -223,26 +223,36 @@
       "id": 7,
       "title": "Most Frequent Authors — Last 30 Days",
       "description": "Accounts that have appeared most often across all briefing runs. Counts include all classifications (act_now, queue, inform, skip). Reflects raw feed volume, not quality.",
-      "type": "barchart",
+      "type": "table",
       "datasource": { "type": "loki", "uid": "loki" },
       "gridPos": { "x": 0, "y": 18, "w": 12, "h": 10 },
       "options": {
-        "orientation": "horizontal",
-        "xField": "author",
-        "fillOpacity": 80,
-        "legend": { "displayMode": "hidden" },
-        "tooltip": { "mode": "single" },
-        "xTickLabelRotation": 0
+        "sortBy": [{ "displayName": "Count", "desc": true }],
+        "footer": { "show": false }
       },
       "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "fixed", "fixedColor": "purple" },
-          "unit": "short"
-        }
+        "defaults": { "unit": "short" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Field" },
+            "properties": [
+              { "id": "displayName", "value": "Author" },
+              { "id": "custom.width", "value": 240 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Last" },
+            "properties": [
+              { "id": "displayName", "value": "Count" },
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }
+            ]
+          }
+        ]
       },
       "transformations": [
-        { "id": "labelsToFields", "options": { "mode": "rows" } },
-        { "id": "sortBy", "options": { "fields": [{ "desc": true, "displayName": "Value" }] } }
+        { "id": "reduce", "options": { "reducers": ["last"] } },
+        { "id": "sortBy", "options": { "fields": [{ "desc": true, "displayName": "Last" }] } }
       ],
       "targets": [
         {
@@ -260,26 +270,36 @@
       "id": 8,
       "title": "People Recommended to Follow — Last 30 Days",
       "description": "Accounts Claude has suggested following across briefing runs. High count = repeatedly flagged as worth following.",
-      "type": "barchart",
+      "type": "table",
       "datasource": { "type": "loki", "uid": "loki" },
       "gridPos": { "x": 12, "y": 18, "w": 12, "h": 10 },
       "options": {
-        "orientation": "horizontal",
-        "xField": "handle",
-        "fillOpacity": 80,
-        "legend": { "displayMode": "hidden" },
-        "tooltip": { "mode": "single" },
-        "xTickLabelRotation": 0
+        "sortBy": [{ "displayName": "Count", "desc": true }],
+        "footer": { "show": false }
       },
       "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "fixed", "fixedColor": "green" },
-          "unit": "short"
-        }
+        "defaults": { "unit": "short" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Field" },
+            "properties": [
+              { "id": "displayName", "value": "Handle" },
+              { "id": "custom.width", "value": 200 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Last" },
+            "properties": [
+              { "id": "displayName", "value": "Count" },
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }
+            ]
+          }
+        ]
       },
       "transformations": [
-        { "id": "labelsToFields", "options": { "mode": "rows" } },
-        { "id": "sortBy", "options": { "fields": [{ "desc": true, "displayName": "Value" }] } }
+        { "id": "reduce", "options": { "reducers": ["last"] } },
+        { "id": "sortBy", "options": { "fields": [{ "desc": true, "displayName": "Last" }] } }
       ],
       "targets": [
         {
