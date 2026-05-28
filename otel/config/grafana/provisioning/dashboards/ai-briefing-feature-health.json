@@ -1,0 +1,293 @@
+{
+  "title": "AI Briefing — Feature Health",
+  "uid": "ai-briefing-feature-health",
+  "tags": ["ai-briefing"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "5m",
+  "time": { "from": "now-7d", "to": "now" },
+  "panels": [
+
+    {
+      "id": 1,
+      "title": "Feature 2 — Trend Detection",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 2,
+      "title": "Trend Clusters Injected per Run",
+      "description": "Number of semantic clusters injected into the classification prompt per run. Each point = one briefing run.",
+      "type": "timeseries",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 1, "w": 16, "h": 8 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 8,
+            "lineWidth": 0,
+            "fillOpacity": 0
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Trend context:\" | regexp \"Trend context: (?P<clusters>\\d+) clusters\" | unwrap clusters | __error__=\"\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "clusters injected"
+        }
+      ]
+    },
+
+    {
+      "id": 3,
+      "title": "Trend Memory by Section",
+      "description": "Total items stored in the trend database, grouped by classification bucket. Shows how much history the trend detector is drawing from.",
+      "type": "barchart",
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-trends" },
+      "gridPos": { "x": 16, "y": 1, "w": 8, "h": 8 },
+      "options": {
+        "orientation": "horizontal",
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQueryText": "SELECT section, COUNT(*) AS count FROM trend_items GROUP BY section ORDER BY count DESC",
+          "timeColumns": []
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "title": "Feature 3 — Source Credibility",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 9, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 5,
+      "title": "Credibility Context Injected per Run",
+      "description": "Green spikes = credibility context was injected. Red spikes = not enough history yet for those handles.",
+      "type": "timeseries",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 10, "w": 8, "h": 8 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 0,
+            "pointSize": 5
+          },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "injected" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "not injected" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "count_over_time({service_name=\"ai-briefing\"} |= \"Credibility context injected for\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "injected"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "count_over_time({service_name=\"ai-briefing\"} |= \"Credibility context: not injected\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "not injected"
+        }
+      ]
+    },
+
+    {
+      "id": 6,
+      "title": "Source Leaderboard (30-day)",
+      "description": "Per-source classification history. pct_act_now = fraction of appearances that landed in ACT NOW. Minimum 3 appearances. Red background = noisy source (>40% act_now may indicate over-enthusiasm or genuine urgency).",
+      "type": "table",
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "sqlite-credibility" },
+      "gridPos": { "x": 8, "y": 10, "w": 16, "h": 8 },
+      "options": {
+        "footer": { "show": false, "countRows": false, "reducer": ["sum"] },
+        "sortBy": [{ "displayName": "pct_act_now", "desc": true }]
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "pct_act_now" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "custom.displayMode", "value": "color-background" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 10 },
+                    { "color": "red", "value": 40 }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "rawQueryText": "SELECT\n  handle,\n  SUM(CASE WHEN section = 'act_now' THEN 1 ELSE 0 END) AS act_now,\n  SUM(CASE WHEN section = 'queue'   THEN 1 ELSE 0 END) AS queue,\n  SUM(CASE WHEN section = 'inform'  THEN 1 ELSE 0 END) AS inform,\n  COUNT(*) AS total,\n  ROUND(100.0 * SUM(CASE WHEN section = 'act_now' THEN 1 ELSE 0 END) / COUNT(*), 1) AS pct_act_now\nFROM source_classifications\nWHERE date >= datetime('now', '-30 days')\nGROUP BY handle\nHAVING COUNT(*) >= 3\nORDER BY pct_act_now DESC\nLIMIT 50",
+          "timeColumns": []
+        }
+      ]
+    },
+
+    {
+      "id": 7,
+      "title": "Feature 4 — Link Enrichment",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 8,
+      "title": "Enrichment Rate per Run",
+      "description": "Enriched = items where actual link content was fetched. Eligible = items in enrichment-enabled categories. Each point = one briefing run.",
+      "type": "timeseries",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 19, "w": 12, "h": 8 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 8,
+            "lineWidth": 0,
+            "fillOpacity": 0
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"Link enrichment: (?P<enriched>\\d+)/\" | unwrap enriched | __error__=\"\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "enriched"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"Link enrichment: \\d+/(?P<eligible>\\d+)\" | unwrap eligible | __error__=\"\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "eligible"
+        }
+      ]
+    },
+
+    {
+      "id": 9,
+      "title": "Content Type Breakdown per Run",
+      "description": "Per-run breakdown of what was fetched: arXiv abstracts, HTML pages, and t.co redirects resolved.",
+      "type": "timeseries",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 12, "y": 19, "w": 12, "h": 8 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 0,
+            "pointSize": 5
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<arxiv>\\d+) arxiv\" | unwrap arxiv | __error__=\"\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "arxiv"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<html>\\d+) html\" | unwrap html | __error__=\"\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "html"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum_over_time({service_name=\"ai-briefing\"} |= \"Link enrichment:\" | regexp \"(?P<redirect>\\d+) redirect\" | unwrap redirect | __error__=\"\" [$__interval])",
+          "queryType": "range",
+          "legendFormat": "redirect"
+        }
+      ]
+    }
+
+  ]
+}

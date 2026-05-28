@@ -8,10 +8,12 @@ services:
     volumes:
       - /mnt/docker/otel/grafana:/var/lib/grafana
       - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - /home/alexander/ai-briefing:/data/ai-briefing:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
     depends_on:
       - prometheus
       - loki

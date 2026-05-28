@@ -101,13 +101,34 @@ docker compose kill -s SIGHUP alertmanager
 ## Grafana dashboards
 
 Drop dashboard JSON files into `config/grafana/provisioning/dashboards/` and
-they will be auto-loaded. Community dashboards for this stack:
+they will be auto-loaded within 10 seconds. Community dashboards for this stack:
 
 - Node Exporter Full: `1860`
 - Loki dashboard: `13639`
 - Tempo / tracing: `16310`
 
 Import by ID via Grafana UI → Dashboards → Import.
+
+### Provisioned dashboards
+
+| File | Description |
+|---|---|
+| `errors.json` | Error rate and span failure tracking |
+| `loki-logs.json` | Raw log explorer |
+| `node-exporter.json` | Host system metrics |
+| `ai-briefing-feature-health.json` | AI briefing pipeline feature health (trend detection, source credibility, link enrichment) |
+
+### SQLite datasources
+
+The `frser-sqlite-datasource` plugin is auto-installed via `GF_INSTALL_PLUGINS`.
+Two SQLite datasources are provisioned for the ai-briefing pipeline:
+
+| Datasource | UID | File |
+|---|---|---|
+| SQLite — Trends | `sqlite-trends` | `/home/alexander/ai-briefing/trends.db` |
+| SQLite — Credibility | `sqlite-credibility` | `/home/alexander/ai-briefing/credibility.db` |
+
+The ai-briefing directory is mounted read-only into the Grafana container at `/data/ai-briefing`.
 
 ## Environment variables
 

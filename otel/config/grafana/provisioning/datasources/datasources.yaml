@@ -49,6 +49,20 @@ datasources:
       lokiSearch:
         datasourceUid: loki
 
+  - name: SQLite — Trends
+    type: frser-sqlite-datasource
+    uid: sqlite-trends
+    access: proxy
+    jsonData:
+      path: /data/ai-briefing/trends.db
+
+  - name: SQLite — Credibility
+    type: frser-sqlite-datasource
+    uid: sqlite-credibility
+    access: proxy
+    jsonData:
+      path: /data/ai-briefing/credibility.db
+
   - name: Alertmanager
     type: alertmanager
     uid: alertmanager
