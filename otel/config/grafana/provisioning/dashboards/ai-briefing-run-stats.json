@@ -1,0 +1,387 @@
+{
+  "title": "AI Briefing — Run Stats",
+  "uid": "ai-briefing-run-stats",
+  "tags": ["ai-briefing"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "5m",
+  "time": { "from": "now-30d", "to": "now" },
+  "panels": [
+
+    {
+      "id": 1,
+      "title": "Run Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 2,
+      "title": "Tweets Analyzed per Run",
+      "description": "Total tweets (all classifications including skip) seen per briefing run. Each point = one run.",
+      "type": "timeseries",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 1, "w": 12, "h": 8 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 8,
+            "lineWidth": 0,
+            "fillOpacity": 0
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` [$__interval]))",
+          "queryType": "range",
+          "legendFormat": "tweets analyzed"
+        }
+      ]
+    },
+
+    {
+      "id": 3,
+      "title": "Classification Breakdown per Run",
+      "description": "Tweets per classification bucket per run interval. Stacked bars show the split between act_now, queue, inform, and skip.",
+      "type": "timeseries",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 12, "y": 1, "w": 12, "h": 8 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": 0,
+            "fillOpacity": 80,
+            "lineWidth": 0,
+            "stacking": { "mode": "normal", "group": "A" }
+          },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "act_now" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "queue" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "inform" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "skip" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "gray" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (classification) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | classification != `` [$__interval]))",
+          "queryType": "range",
+          "legendFormat": "{{classification}}"
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "title": "Classification Totals — Last 30 Days",
+      "description": "Cumulative split across all runs in the selected time range.",
+      "type": "piechart",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 9, "w": 8, "h": 8 },
+      "options": {
+        "pieType": "donut",
+        "displayLabels": ["name", "percent"],
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "act_now" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "queue" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "inform" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "skip" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "gray" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (classification) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | classification != `` [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "{{classification}}"
+        }
+      ]
+    },
+
+    {
+      "id": 5,
+      "title": "Avg Items per Section — Last 30 Days",
+      "description": "Mean count per run for each non-skip classification.",
+      "type": "stat",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 8, "y": 9, "w": 16, "h": 8 },
+      "options": {
+        "reduceOptions": { "calcs": ["mean"] },
+        "orientation": "horizontal",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 1 },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "act_now" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "queue" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "inform" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (classification) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | classification=`act_now` [$__interval]))",
+          "queryType": "range",
+          "legendFormat": "act_now"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (classification) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | classification=`queue` [$__interval]))",
+          "queryType": "range",
+          "legendFormat": "queue"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (classification) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | classification=`inform` [$__interval]))",
+          "queryType": "range",
+          "legendFormat": "inform"
+        }
+      ]
+    },
+
+    {
+      "id": 6,
+      "title": "Author Frequency",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 17, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 7,
+      "title": "Most Frequent Authors — Last 30 Days",
+      "description": "Accounts that have appeared most often across all briefing runs. Counts include all classifications (act_now, queue, inform, skip). Reflects raw feed volume, not quality.",
+      "type": "barchart",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 18, "w": 12, "h": 10 },
+      "options": {
+        "orientation": "horizontal",
+        "fillOpacity": 80,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(15, sum by (author) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | author != `` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "{{author}}"
+        }
+      ]
+    },
+
+    {
+      "id": 8,
+      "title": "People Recommended to Follow — Last 30 Days",
+      "description": "Accounts Claude has suggested following across briefing runs. High count = repeatedly flagged as worth following.",
+      "type": "barchart",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 12, "y": 18, "w": 12, "h": 10 },
+      "options": {
+        "orientation": "horizontal",
+        "fillOpacity": 80,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(15, sum by (handle) (count_over_time({service_name=\"ai-briefing\"} | json | event=`person_recommended` | handle != `` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "{{handle}}"
+        }
+      ]
+    },
+
+    {
+      "id": 9,
+      "title": "Following-List Funnel",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 10,
+      "title": "Followed Accounts: Surfaced vs Skipped",
+      "description": "For tweets from accounts you follow, how many made it into act_now/queue/inform vs were skipped. Ordered by total tweet volume.",
+      "type": "barchart",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 29, "w": 16, "h": 10 },
+      "options": {
+        "orientation": "horizontal",
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "xTickLabelRotation": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "surfaced" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "skipped" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "gray" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (author) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | in_following=`true` | classification != `skip` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "surfaced"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (author) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | in_following=`true` | classification=`skip` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "skipped"
+        }
+      ]
+    },
+
+    {
+      "id": 11,
+      "title": "Following-List Hit Rate",
+      "description": "Percentage of tweets from followed accounts that made it into Telegram (not skipped). Low % = that account's content isn't passing the filter.",
+      "type": "bargauge",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 16, "y": 29, "w": 8, "h": 10 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "green", "value": 0.25 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (author) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | in_following=`true` | classification != `skip` [$__range])) / sum by (author) (count_over_time({service_name=\"ai-briefing\"} | json | event=`source_tweet` | in_following=`true` [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "{{author}}"
+        }
+      ]
+    }
+
+  ]
+}
