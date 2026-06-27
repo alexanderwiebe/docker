@@ -1,7 +1,7 @@
 services:
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana@sha256:0f86bada30d65ef9d0183b90c1e2682ac92d53d95da8bed322b984ea78a4a73a
     container_name: grafana
     ports:
       - "3000:3000"
@@ -23,7 +23,7 @@ services:
       - monitoring
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus@sha256:e4254400b85610324913f0dc4acf92603d9984e7519414c5a12811aa6146acc3  # 3.11.3
     container_name: prometheus
     ports:
       - "9090:9090"
@@ -42,7 +42,7 @@ services:
       - monitoring
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki@sha256:73e905b51a7f917f7a1075e4be68759df30226e03dcb3cd2213b989cc0dc8eb4  # 3.7.1
     container_name: loki
     ports:
       - "3100:3100"
@@ -55,7 +55,7 @@ services:
       - monitoring
 
   tempo:
-    image: grafana/tempo:latest
+    image: grafana/tempo@sha256:4b2cbc59c5a7a25415dbe2b3d6674e5d439b66d596b6e071dd167ce660e3b85e
     container_name: tempo
     ports:
       - "3200:3200"
@@ -68,7 +68,7 @@ services:
       - monitoring
 
   otelcol:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib@sha256:d57bfe8eee2378f31cb1193239fbcac521d54a5a071fca2bfc106916a32b892d  # 0.151.0
     container_name: otelcol
     ports:
       - "4317:4317"   # OTLP gRPC
@@ -86,7 +86,7 @@ services:
       - monitoring
 
   alertmanager:
-    image: prom/alertmanager:latest
+    image: prom/alertmanager@sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286  # 0.32.1
     container_name: alertmanager
     ports:
       - "9093:9093"
@@ -101,7 +101,7 @@ services:
       - monitoring
 
   node-exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter@sha256:e9cff4fc67b1818f8c97adb115b9f12c9a54b533de86765d4a0effc01b357205  # 1.11.1
     container_name: node-exporter
     ports:
       - "9100:9100"

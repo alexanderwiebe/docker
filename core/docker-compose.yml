@@ -1,10 +1,11 @@
 services:
 
   freshrss:
-    image: freshrss/freshrss:latest
+    image: freshrss/freshrss@sha256:9100f649f5c946f589f54cdb9be7a65996528f48f691ef90eb262a0e06e5a522  # 1.28.1
     container_name: freshrss
     environment:
       - TZ=America/Chicago
+      - CRON_MIN=*/15
     volumes:
       - /mnt/docker/core/freshrss/data:/var/www/FreshRSS/data
       - /mnt/docker/core/freshrss/extensions:/var/www/FreshRSS/extensions
@@ -13,7 +14,7 @@ services:
     restart: unless-stopped
 
   rsshub:
-    image: diygod/rsshub:latest
+    image: diygod/rsshub@sha256:4ab69c188e020b0838f9ca637b9eeb20fbe7cd6502c664874a6422f3d2fd66ae
     container_name: rsshub
     ports:
       - "1200:1200"
@@ -30,10 +31,84 @@ services:
     restart: unless-stopped  
 
   redis:
-    image: redis:alpine
+    image: redis@sha256:81b6f81d6a6c5b9019231a2e8eb10085e3a139a34f833dcc965a8a959b040b72  # 8.6.2-alpine
     container_name: redis
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
       - /mnt/docker/core/redis:/data
     restart: unless-stopped
+
+  kosync:
+    image: koreader/kosync@sha256:bb3f13615365703315a43b9059f65e71e876440f867e23a42bf27f2fa18264e1  # v2.1.1
+    container_name: kosync
+    volumes:
+      - /mnt/docker/core/kosync/logs/app:/app/koreader-sync-server/logs
+      - /mnt/docker/core/kosync/logs/redis:/var/log/redis
+      - /mnt/docker/core/kosync/data/redis:/var/lib/redis
+    ports:
+      - "7200:17200"
+    restart: unless-stopped
+
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web@sha256:58e1c0abdfcd22341d87402dc56577eae1f4a18344bdc0c02dfbd97c47dff4a6  # 0.6.26-ls387
+    container_name: calibre-web
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - DOCKER_MODS=linuxserver/mods:universal-calibre
+    volumes:
+      - /mnt/docker/core/calibre-web/config:/config
+      - /mnt/media/books:/books
+    ports:
+      - "8083:8083"
+    restart: unless-stopped
+
+  nextcloud-db:
+    image: mariadb@sha256:be1ef4fe5f14589325c08a41c76334097ce66c86264b75e1d28342c742782a61  # 11.8.8
+    container_name: nextcloud-db
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - TZ=America/Chicago
+      - MYSQL_ROOT_PASSWORD=${NEXTCLOUD_DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=${NEXTCLOUD_DB_PASSWORD}
+    volumes:
+      - /mnt/docker/core/nextcloud/db:/var/lib/mysql
+    restart: unless-stopped
+
+  nextcloud:
+    image: nextcloud@sha256:07ec73cc816e58d6f45a162cd53ef886462c29271a23fc68d0124cec276e3767  # 31-apache
+    container_name: nextcloud
+    environment:
+      - TZ=America/Chicago
+      - MYSQL_HOST=nextcloud-db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=${NEXTCLOUD_DB_PASSWORD}
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER}
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}
+      - NEXTCLOUD_TRUSTED_DOMAINS=192.168.1.50 100.93.206.138 homelab
+    volumes:
+      - /mnt/docker/core/nextcloud/html:/var/www/html
+      - /mnt/storage/nextcloud/data:/var/www/html/data
+    depends_on:
+      - nextcloud-db
+    restart: unless-stopped
+
+  caddy:
+    image: caddy@sha256:1557580dffd3f309e30bd76b23a26aa3970d98bff11313cfa3a63b735ac8d04a  # 2.11.4
+    container_name: caddy
+    volumes:
+      - /mnt/docker/core/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - /mnt/docker/core/caddy/data:/data
+      - /mnt/docker/core/caddy/config:/config
+    ports:
+      - "443:443"
+      - "443:443/udp"
+    depends_on:
+      - nextcloud
+    restart: unless-stopped
+
